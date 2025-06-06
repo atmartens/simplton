@@ -1,0 +1,24 @@
+[profile.release]
+opt-level = "z" # optimize for size
+lto = true # link-time optimization
+codegen-units = 1
+panic = "abort" # abort on panic
+strip = true # strip symbols from binary
+
+[package]
+edition = "2024"
+name = "simplton"
+version = "1.0.0"
+authors = ["Andrew T. Martens <andrew_martens@hms.harvard.edu>"]
+
+[dependencies]
+anyhow = "1.0"
+bio = "2.3"
+clap = {version = "4.5", features = ["derive"]}
+csv = "1.3"
+rand = "0.9"
+rand_distr = "0.5"
+threadpool = "1.8"
+term = "1.0"
+arrow2 = {  version = "0.18", features = ["io_parquet", "io_parquet_compression"] }
+polars = {  version = "0.46", features = ["lazy", "parquet", "cum_agg", "performant", "is_in", "diff", "polars-ops", "top_k"] }
