@@ -8,7 +8,7 @@ SIMP'LTON is a computer program which models biological translation (ribosomes t
 - translation initiation rates
 - the rate of incorporation of labeled amino acids into nascent polypeptides (*i.e.* pulse-chase experiments)
 
-SIMP'LTON makes simplifying assumptions about translation: that each codon has an invariant, exponentially distributed translation rate, meaning that translation initiation, elongation and termination each happen in a single step. The focus is on the interplay between fast and slow translation rates, rather than any particular molecular mechanism. Nevertheless, SIMP'LTON recapitulates numerous experimental results from the literature.
+SIMP'LTON makes simplifying assumptions about translation: that each codon has an invariant, exponentially distributed translation rate, meaning that translation initiation and termination each happen in a single step, and translation elongation at each codon position happens in a single step. The focus is on the interplay between fast and slow translation rates, rather than any particular molecular mechanism. Nevertheless, SIMP'LTON recapitulates numerous experimental results from the literature.
 
 ## Illustrations
 
