@@ -86,7 +86,7 @@ pub fn calculate_complete_step_times(
 	.sort(["mRNA", "ribosome", "pos"], sort_opts_triple.clone())
         .with_column(
 	    col("timestamp")
-		.diff(1, Ignore)
+		.diff(lit(1), Ignore)
 		.over([col("mRNA"), col("ribosome")])
 		.alias("step time")
 	)
@@ -101,7 +101,8 @@ pub fn calculate_complete_step_times(
 	.sort(["ribosome", "timestamp"], sort_opts_double.clone())
         .with_column(
 	    col("timestamp")
-		.diff(1, Ignore)
+		//.diff(1, Ignore)
+		.diff(lit(1), Ignore)
 		.over([col("mRNA")])
 		.alias("step time")
 	)
@@ -327,7 +328,7 @@ pub fn calculate_pulse_chase(
 		.eq(num_codons - 1)
 	).filter(
 	    col("pos")
-		.is_in(lit(l_p))
+		.is_in(lit(l_p).implode(), false)
 	).filter(
 	    col("timestamp")
 		.gt(pulse_time)
