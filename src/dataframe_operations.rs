@@ -90,7 +90,7 @@ pub fn calculate_complete_step_times(
 		.over([col("mRNA"), col("ribosome")])
 		.alias("step time")
 	)
-	.drop(["timestamp"])
+	.drop(cols(["timestamp"]))
 	.sort(["mRNA", "ribosome"], sort_opts_double.clone());
     
     let init_times = df_trajectories
@@ -106,7 +106,7 @@ pub fn calculate_complete_step_times(
 		.over([col("mRNA")])
 		.alias("step time")
 	)
-	.drop(["pos", "timestamp"])	      
+	.drop(cols(["pos", "timestamp"]))
         .sort(["mRNA"], Default::default());
 
     let init_zero = df_trajectories
@@ -124,7 +124,7 @@ pub fn calculate_complete_step_times(
 	.clone()
 	.lazy()
 	.sort(["mRNA"], Default::default())
-	.drop(["mRNA"]);
+	.drop(cols(["mRNA"]));
 
     let concat_zero_and_start = concat_lf_horizontal(
 	&[init_zero, df_mrna_start_times],
@@ -134,7 +134,7 @@ pub fn calculate_complete_step_times(
 	    (col("timestamp") - col("start time"))
 		.alias("step time")
 	)
-	      .drop(["timestamp", "start time"]);
+	      .drop(cols(["timestamp", "start time"]));
 
     let init_times_no_pioneer = init_times
         .filter(col("ribosome").neq(0))
@@ -188,7 +188,7 @@ pub fn calculate_final_occupancy(
     let result = df_trajectories
 	.clone()
 	.lazy()
-	.drop(["timestamp"])
+	.drop(cols(["timestamp"]))
 	.filter(
 	    // Must not have yet terminated
 	    col("pos")
@@ -202,7 +202,7 @@ pub fn calculate_final_occupancy(
 	.agg(
 	    [col("pos").top_k(lit(footprint_length)).alias("pos")]
 	)
-	.explode(["pos"])
+	.explode(cols(["pos"]))
     // Don't count occupancy beyond the stop codon
 	.filter(col("pos").lt_eq(num_codons))
 	.group_by(["pos"])
@@ -210,7 +210,7 @@ pub fn calculate_final_occupancy(
 	.with_column(
 	    (col("count") / lit(num_mRNA as f32)).alias("fractional occupancy")
 	)
-	.drop(["count"])
+	.drop(cols(["count"]))
 	.sort(["pos"], sort_opts)
 	.collect()?;
     
@@ -238,7 +238,7 @@ pub fn calculate_final_nascent_peptide_length_distribution(
 	    .over(["mRNA", "ribosome"])
 	    .lt(num_codons - 1)
     )
-	.drop(["timestamp", "mRNA", "ribosome"])
+	.drop(cols(["timestamp", "mRNA", "ribosome"]))
 	.group_by(["pos"])
 	.agg([col("pos").count().alias("count")])
 	.sort(["pos"], sort_opts)
@@ -402,7 +402,7 @@ pub fn calculate_synthesis_times(
         .with_column(
 	    (col("term time") - col("init time")).alias("synthesis time")
 	)
-        .drop(["init time", "term time"])
+        .drop(cols(["init time", "term time"]))
     // NOTE Arguably instead want to sort by radioactivity, exit time, or
     // relative time so that plotting doesn't require sorting later?
 	.sort(["mRNA", "ribosome"], sort_opts_double)
@@ -418,7 +418,7 @@ pub fn calculate_final_average_ribosome_spacing(
     let final_ribosomes = df_trajectories
 	.clone()
 	.lazy()
-	.drop(["timestamp"])
+	.drop(cols(["timestamp"]))
 	.with_column(
 	    col("pos")
 		.max()
@@ -429,7 +429,7 @@ pub fn calculate_final_average_ribosome_spacing(
 	.filter(col("max_pos").lt(num_codons - 1))
     // Must be the furthest it goes
 	.filter(col("pos").eq(col("max_pos")))
-	.drop(["max_pos"])
+	.drop(cols(["max_pos"]))
 	.with_column((col("ribosome") + lit(1)).alias("next_ribosome"));
 
     let spacings = final_ribosomes.clone().join(
@@ -439,7 +439,7 @@ pub fn calculate_final_average_ribosome_spacing(
 	JoinArgs::new(JoinType::Inner).with_suffix(Some("_next".into()))
     )
 	.with_column((col("pos_next") - col("pos")).alias("spacing"))
-	.drop(["pos"])
+	.drop(cols(["pos"]))
 	.group_by(["mRNA"])
 	.agg([col("spacing").mean().alias("average spacing")])
 	.collect()?;
@@ -503,7 +503,7 @@ pub fn calculate_collision_frequency(
 	    &[ col("mRNA"), col("ribosome"), col("pos_next") ],
 	    &[ col("mRNA"), col("ribosome"), col("pos") ],
 	    JoinArgs::new(JoinType::Left).with_suffix(Some("_advance".into())))
-	.drop(["pos_next", "pos_next_advance"])
+	.drop(cols(["pos_next", "pos_next_advance"]))
 	.with_columns([
 	    (col("ribosome") + lit(1)).alias("rib_neighbor"),
 	    (col("pos") - lit(footprint_length)).alias("pos_neighbor")
@@ -518,8 +518,8 @@ pub fn calculate_collision_frequency(
 	    &[ col("mRNA"), col("rib_neighbor"), col("pos_neighbor") ],
 	    &[ col("mRNA"), col("ribosome"), col("pos") ],
 	    JoinArgs::new(JoinType::Left).with_suffix(Some("_collide".into())))
-	.drop(["rib_neighbor", "pos_neighbor", "rib_neighbor_collide",
-	       "pos_neighbor_collide"])
+	.drop(cols(["rib_neighbor", "pos_neighbor", "rib_neighbor_collide",
+	       "pos_neighbor_collide"]))
 	.with_columns([
 	    col("timestamp_advance").fill_null(f32::INFINITY),
 	    col("timestamp_collide").fill_null(f32::INFINITY)
